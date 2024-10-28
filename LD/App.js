@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "./Screen/LoginScreen";
 import HomeScreen from "./Screen/HomeScreen";
-import { PhoneNumberProvider } from "./Screen/PhoneNumberContext"; // Import Provider
+import { PhoneNumberProvider } from "./Screen/PhoneNumberContext";
 
 const Stack = createStackNavigator();
 

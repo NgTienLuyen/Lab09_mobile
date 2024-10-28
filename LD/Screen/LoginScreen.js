@@ -10,11 +10,12 @@ import {
   TouchableWithoutFeedback,
   Alert,
 } from "react-native";
-import { PhoneNumberContext } from "./PhoneNumberContext"; // Import Context
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PhoneNumberContext } from "./PhoneNumberContext";
 
 export default function LoginScreen({ navigation }) {
   const [phoneNumberInput, setPhoneNumberInput] = useState("");
-  const { setPhoneNumber } = useContext(PhoneNumberContext); // Lấy hàm setPhoneNumber từ context
+  const { setPhoneNumber } = useContext(PhoneNumberContext);
 
   const handleInput = (value) => {
     const formattedValue = value.replace(/[^0-9]/g, "");
@@ -26,20 +27,22 @@ export default function LoginScreen({ navigation }) {
   const formatPhoneNumber = (value) => {
     const phoneNumberPattern = /^(\d{3})(\d{3})(\d{4})$/;
     const matches = value.match(phoneNumberPattern);
-    if (matches) {
-      return `${matches[1]}-${matches[2]}-${matches[3]}`;
-    }
-    return value;
+    return matches ? `${matches[1]}-${matches[2]}-${matches[3]}` : value;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!validatePhoneNumber(phoneNumberInput)) {
       Alert.alert("Lỗi", "Số điện thoại không hợp lệ. Vui lòng nhập lại.", [
         { text: "OK" },
       ]);
     } else {
-      setPhoneNumber(phoneNumberInput); // Lưu số điện thoại vào context
-      navigation.navigate("Home");
+      try {
+        await AsyncStorage.setItem("phoneNumber", phoneNumberInput); // Lưu vào AsyncStorage
+        setPhoneNumber(phoneNumberInput); // Lưu vào context
+        navigation.navigate("Home");
+      } catch (e) {
+        console.error("Lỗi lưu số điện thoại vào AsyncStorage", e);
+      }
     }
   };
 
@@ -89,42 +92,24 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     backgroundColor: "#f5f5f5",
   },
-  statusBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#333",
-    borderRadius: 5,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  statusIcon: {
-    marginHorizontal: 8,
-  },
   title: {
     fontSize: 32,
     color: "#333",
     marginBottom: 20,
     textAlign: "left",
     fontWeight: "700",
-    marginLeft: 10,
   },
   description: {
     fontSize: 16,
     color: "#333",
     marginBottom: 20,
-    textAlign: "left",
     fontWeight: "600",
-    marginLeft: 10,
     lineHeight: 24,
   },
   phoneNumberLabel: {
     fontSize: 18,
     color: "#333",
     marginBottom: 10,
-    textAlign: "left",
-    marginLeft: 10,
   },
   phoneNumberInput: {
     fontSize: 24,
@@ -143,8 +128,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#007BFF",
     borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
   },
   continueButtonText: {
     color: "#fff",
